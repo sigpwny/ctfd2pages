@@ -6,7 +6,18 @@ const url = require('node:url');
 
 const puppeteer = require('puppeteer');
 
-const YEAR = 2021;
+const args = process.argv.slice(2);
+
+if (args.length < 2) {
+  console.error(`Usage: ${process.argv[0]} ${process.argv[1]} [origin] [path]`);
+  console.error(`Example: ${process.argv[0]} ${process.argv[1]} https://2022.uiuc.tf 2022/`);
+  process.exit(1);
+}
+
+let [origin, basepath] = args;
+if (!origin.endsWith('/')) {
+  origin += '/';
+}
 
 const completedDownloads = new Set();
 const completedURLs = new Set();
@@ -40,16 +51,15 @@ const downloadFile = async (requestUrl, filepath) =>{
 };
 
 (async () => {
-  // const browser = await puppeteer.launch({headless: false});
-  const browser = await puppeteer.launch({headless: true});
+  const browser = await puppeteer.launch();
 
-  const firstPage = `https://${YEAR}.uiuc.tf/`;
+  const firstPage = origin;
   toVisit.push(firstPage);
   visitedPages.add(firstPage);
 
   const urlToPath = (requestUrl) => {
-    assert(requestUrl.startsWith(`https://${YEAR}.uiuc.tf`));
-    let filepath = requestUrl.substring(`https://${YEAR}.uiuc.tf`.length);
+    assert(requestUrl.startsWith(origin));
+    let filepath = requestUrl.substring(origin.length);
     filepath = filepath.replace(/\?d=[0-9a-f]{8}$/, '');
     filepath = filepath.replace(/\?_=[0-9]+$/, '');
     // if (filepath == '/teams') {
@@ -59,7 +69,7 @@ const downloadFile = async (requestUrl, filepath) =>{
     if (filepath.endsWith('/')) {
       filepath += 'index.html';
     }
-    filepath = path.join(`${YEAR}`, `./${filepath}`);
+    filepath = path.join(basepath, `./${filepath}`);
     return filepath;
   };
 
@@ -88,8 +98,6 @@ const downloadFile = async (requestUrl, filepath) =>{
         clearTimeout(deathTimer);
         deathTimer = undefined;
       }
-      // deathTimer = setTimeout(() => browseCompleted.resolve(),
-      //     pendingRequests.size ? 1000 : 100);
       if (!pendingRequests.size) {
         deathTimer = setTimeout(() => {
           if (!pendingRequests.size) {
@@ -97,16 +105,12 @@ const downloadFile = async (requestUrl, filepath) =>{
           }
         }, 250);
       }
-      // console.log(pendingRequests);
     };
 
     page.on('request', (request) => {
       // Sometimes static files don't get requestfinished somehow
       const requestUrl = request.url();
-      // if (!((requestUrl.startsWith(`https://${YEAR}.uiuc.tf/themes/core/static/`) ||
-      //        requestUrl.startsWith(`https://${YEAR}.uiuc.tf/cdn-cgi/`)) &&
-      //     completedURLs.has(requestUrl))) {
-      if (!(requestUrl.startsWith(`https://${YEAR}.uiuc.tf/`) &&
+      if (!(requestUrl.startsWith(origin) &&
           completedURLs.has(urlToPath(requestUrl)))) {
         if (!requestUrl.startsWith('https://discord.com/widget') &&
             !requestUrl.startsWith('data:')) {
@@ -119,7 +123,7 @@ const downloadFile = async (requestUrl, filepath) =>{
     page.on('requestfailed', (request) => {
       const requestUrl = request.url();
 
-      if (requestUrl.startsWith(`https://${YEAR}.uiuc.tf`)) {
+      if (requestUrl.startsWith(origin)) {
         completedURLs.add(urlToPath(requestUrl));
       }
       pendingRequests.delete(requestUrl);
@@ -131,16 +135,16 @@ const downloadFile = async (requestUrl, filepath) =>{
       const requestUrl = request.url();
       const originRedirect = redirectedTargets.get(requestUrl);
 
-      if (requestUrl.startsWith(`https://${YEAR}.uiuc.tf`)) {
+      if (requestUrl.startsWith(origin.length)) {
         completedURLs.add(urlToPath(requestUrl));
       }
 
-      if (originRedirect || requestUrl.startsWith(`https://${YEAR}.uiuc.tf`)) {
+      if (originRedirect || requestUrl.startsWith(origin)) {
         const status = response.status();
 
         if (status >= 200 && status < 300) {
           let filepath;
-          if (!originRedirect || requestUrl.startsWith(`https://${YEAR}.uiuc.tf`)) {
+          if (!originRedirect || requestUrl.startsWith(origin)) {
             filepath = urlToPath(requestUrl);
           } else {
             filepath = urlToPath(originRedirect);
@@ -172,7 +176,7 @@ const downloadFile = async (requestUrl, filepath) =>{
             console.log('done:', filepath);
           }
 
-          if (originRedirect && requestUrl.startsWith(`https://${YEAR}.uiuc.tf`)) {
+          if (originRedirect && requestUrl.startsWith(origin)) {
             const symlinkPath = urlToPath(originRedirect);
             if (!completedDownloads.has(symlinkPath)) {
               await fs.promises.symlink(path.relative(
@@ -184,7 +188,6 @@ const downloadFile = async (requestUrl, filepath) =>{
         } else if (status >= 300 && status < 400) {
           const target = new url.URL(
               response.headers()['location'], requestUrl).href;
-          // console.log(`Redirect from ${requestUrl} to ${target}`);
 
           redirectedTargets.set(target, originRedirect || requestUrl);
         }
@@ -198,7 +201,6 @@ const downloadFile = async (requestUrl, filepath) =>{
     console.log('visiting:', visiting);
     await page.goto(visiting);
 
-    // await page.waitForNavigation({waitUntil: 'networkidle2'});
     while (true) {
       await browseCompleted;
 
@@ -211,7 +213,7 @@ const downloadFile = async (requestUrl, filepath) =>{
       heartbeat();
     }
 
-    if (visiting == `https://${YEAR}.uiuc.tf/challenges`) {
+    if (visiting == `${origin}challenges`) {
       // Puppeteer headless don't fetch favicon
       const favicon = await page.evaluate(() => {
         return document.querySelector('link[rel*=\'icon\']').href;
@@ -240,7 +242,7 @@ const downloadFile = async (requestUrl, filepath) =>{
         });
 
         for (const handout of handouts) {
-          if (!handout.startsWith(`https://${YEAR}.uiuc.tf/`)) {
+          if (!handout.startsWith(origin)) {
             continue;
           }
 
@@ -271,7 +273,7 @@ const downloadFile = async (requestUrl, filepath) =>{
     });
 
     for (let link of links) {
-      if (!link.startsWith(`https://${YEAR}.uiuc.tf/`)) {
+      if (!link.startsWith(origin)) {
         continue;
       }
 
@@ -280,10 +282,6 @@ const downloadFile = async (requestUrl, filepath) =>{
       link = link.href;
 
       if (!visitedPages.has(link)) {
-        // if (link.startsWith('https://2022.uiuc.tf/teams/') &&
-        //     fs.existsSync(urlToPath(link + '.html'))) {
-        //   continue;
-        // }
         toVisit.push(link);
         visitedPages.add(link);
       }
