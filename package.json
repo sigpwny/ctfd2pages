@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "dependencies": {
+    "jquery": "^3.6.0",
+    "puppeteer": "^16.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.21.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
