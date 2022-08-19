@@ -15,19 +15,17 @@ const main = async function() {
     const {window} = new JSDOM(inputhtml);
     const {document} = window;
 
-    let deleteNode = Array.from(document.querySelectorAll('input'))
-        .filter((node) => node.attributes.placeholder
-            ?.value?.startsWith('Search for matching '));
-
+    let deleteNode = Array.from(document.querySelectorAll('a[href="/login"]'));
     assert(deleteNode.length === 1);
     [deleteNode] = deleteNode;
 
-    deleteNode = deleteNode.closest('div.row');
+    deleteNode = deleteNode.closest('ul.navbar-nav');
     const deletion = util.expandHTMLs(
-        deleteNode, 'next', (node) => node.tagName === 'HR');
+        deleteNode, 'previous', (node) => node.tagName === 'HR');
 
     const outputhtml = await util.deleteHtmlWithFixup(
         inputhtml, deletion, lastFixup);
+
     fs.writeFileSync(file, outputhtml);
   }
 
