@@ -2,6 +2,8 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const {JSDOM} = require('jsdom');
 
+const util = require('../util.js');
+
 const main = async function() {
   const file = process.argv[2];
   const inputhtml = fs.readFileSync(file, 'utf8');
@@ -24,22 +26,11 @@ const main = async function() {
   // Edit the HTML manually.
   let outputhtml = inputhtml;
 
-  // Why is doing everything in JS so difficult?! Maybe I should write python...
-  const regexEscape = (string) => {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  };
-  const regexEscapeReplacement = (string) => {
-    return string.replace(/\$/g, '$$$$');
-  };
-  const countSubstring = (string, substring) => {
-    return (string.match(new RegExp(regexEscape(substring), 'g')) || []).length;
-  };
   const findReplace = (src, dst, nodefinder) => {
     assert(nodefinder(src).length === 1);
-    assert(countSubstring(outputhtml, src) === 1);
+    assert(util.countSubstring(outputhtml, src) === 1);
 
-    outputhtml = outputhtml.replace(
-        new RegExp(regexEscape(src)), regexEscapeReplacement(dst));
+    outputhtml = util.replaceOnce(outputhtml, src, dst);
   };
 
   findReplace(
