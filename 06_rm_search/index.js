@@ -26,21 +26,34 @@ const main = async function() {
     [deleteNode] = deleteNode;
 
     deleteNode = deleteNode.closest('div.row');
-    const deletion = deleteNode.outerHTML;
+    let deletion = deleteNode.outerHTML;
 
-    // outputhtml = document.documentElement.outerHTML;
+    const deleteNodeNext = deleteNode.nextElementSibling;
+    if (deleteNodeNext?.tagName === 'HR') {
+      let nextNode = deleteNode;
+
+      while (nextNode !== deleteNodeNext) {
+        nextNode = nextNode.nextSibling;
+        if (nextNode.outerHTML !== undefined) {
+          deletion += nextNode.outerHTML;
+        } else {
+          const wrap = document.createElement('div');
+          wrap.appendChild(nextNode.cloneNode(true));
+          deletion += wrap.innerHTML;
+        }
+      }
+    }
+
     if (util.countSubstring(outputhtml, deletion) === 1) {
       // Simple case
       outputhtml = outputhtml.replace(
-          new RegExp(util.regexEscape(deletion) +
-              '(?:\n|\r\n)?(?:\s*<hr[^>]*>(?:\n|\r\n)?)?'), '');
+          new RegExp(util.regexEscape(deletion) + '(?:\n|\r\n)?'), '');
       assert(outputhtml !== inputhtml);
     } else if (lastFixup && deletion === lastFixup[0] &&
                util.countSubstring(outputhtml, lastFixup[1]) === 1) {
       // Use cached fixup
       outputhtml = outputhtml.replace(
-          new RegExp(util.regexEscape(lastFixup[1]) +
-              '(?:\n|\r\n)?(?:\s*<hr[^>]*>(?:\n|\r\n)?)?'), '');
+          new RegExp(util.regexEscape(lastFixup[1]) + '(?:\n|\r\n)?'), '');
       assert(outputhtml !== inputhtml);
     } else {
       // Fuzzy search this
@@ -49,8 +62,7 @@ const main = async function() {
       lastFixup = [deletion, fixup];
 
       outputhtml = outputhtml.replace(
-          new RegExp(util.regexEscape(fixup) +
-              '(?:\n|\r\n)?(?:\s*<hr[^>]*>(?:\n|\r\n)?)?'), '');
+          new RegExp(util.regexEscape(fixup) + '(?:\n|\r\n)?'), '');
       assert(outputhtml !== inputhtml);
     }
 
