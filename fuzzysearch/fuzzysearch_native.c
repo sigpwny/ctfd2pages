@@ -1,5 +1,5 @@
 // Compile with:
-// $ emcc fastfuzzy_native.c -sEXPORTED_FUNCTIONS=_fastfuzzy,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,getValue -sALLOW_MEMORY_GROWTH -O2 -o fastfuzzy_native.js
+// $ emcc fuzzysearch_native.c -sEXPORTED_FUNCTIONS=_fuzzysearch,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,getValue -sALLOW_MEMORY_GROWTH -O2 -o fuzzysearch_native.js
 
 #include <assert.h>
 #include <stdbool.h>
@@ -15,7 +15,7 @@
 
 // Algorithm from: https://en.wikipedia.org/wiki/Approximate_string_matching#Problem_formulation_and_algorithms
 // Modified code from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#C
-void fastfuzzy(char *s1, char *s2, uint32_t *start, uint32_t *end)
+void fuzzysearch(char *s1, char *s2, uint32_t *start, uint32_t *end)
 {
 	uint32_t s1len = strlen(s1);
 	uint32_t s2len = strlen(s2);

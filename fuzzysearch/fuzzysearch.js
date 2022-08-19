@@ -1,4 +1,4 @@
-const native = require('./fastfuzzy_native.js');
+const native = require('./fuzzysearch_native.js');
 
 const initAllocate = new Promise((resolve, reject) => {
   native.onRuntimeInitialized = () => {
@@ -9,18 +9,18 @@ const initAllocate = new Promise((resolve, reject) => {
   };
 });
 
-exports.fastfuzzy = async (haystack, needle) => {
+exports.fuzzysearch = async (haystack, needle) => {
   const [startBuf, endBuf] = await initAllocate;
 
   native.ccall(
-      'fastfuzzy', null,
+      'fuzzysearch', null,
       ['string', 'string', 'number', 'number'],
       [haystack, needle, startBuf, endBuf]);
 
   return [native.getValue(startBuf, 'i32'), native.getValue(endBuf, 'i32')];
 };
 
-exports.fastfuzzySlice = async (haystack, needle) => {
-  const [start, end] = await exports.fastfuzzy(haystack, needle);
+exports.fuzzysearchSlice = async (haystack, needle) => {
+  const [start, end] = await exports.fuzzysearch(haystack, needle);
   return haystack.slice(start, end);
 };

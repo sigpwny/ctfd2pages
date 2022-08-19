@@ -1,6 +1,6 @@
 const assert = require('node:assert');
 
-const {fastfuzzySlice} = require('./fastfuzzy/fastfuzzy.js');
+const {fuzzysearchSlice} = require('./fuzzysearch/fuzzysearch.js');
 
 // Why is doing everything in JS so difficult?! Maybe I should write python...
 exports.regexEscape = (string) => {
@@ -76,7 +76,7 @@ exports.deleteHtmlWithFixup = async (orightml, deletion, state) => {
     assert(newhtml !== orightml);
   } else {
     // Fuzzy search this
-    const fixup = await fastfuzzySlice(newhtml, deletion);
+    const fixup = await fuzzysearchSlice(newhtml, deletion);
     assert(exports.countSubstring(newhtml, fixup) === 1);
     state.data = [deletion, fixup];
 
