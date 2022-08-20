@@ -1,0 +1,28 @@
+#! /bin/bash
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
+if [[ "$1" =~ [0-9]{2} ]]; then
+  for STAGE in "$DIR"/*/; do
+    STAGE="$(basename "$STAGE")"
+    if [[ "$STAGE" =~ ^$1_ ]]; then
+      echo "$STAGE"
+      shift
+      "$DIR"/"$STAGE"/run.sh "$@"
+      exit "$?"
+    fi
+  done
+fi
+
+echo "Usage: $0 [stage number]"
+echo 'Stages:'
+for STAGE in "$DIR"/*/; do
+  STAGE="$(basename "$STAGE")"
+  if [[ "$STAGE" =~ ^([0-9]{2})_(.+)$ ]]; then
+    echo -e "  $0 ${BASH_REMATCH[1]}\t\t${BASH_REMATCH[2]}"
+  fi
+done
+echo 'Required environment variables:'
+echo -e '  $CTFD_REPO\t\tPath to the repository of GitHub Pages (example: ~/ctfd-pages)'
+echo -e '  $CTFD_URL\t\tURL of the CTFd website (example: https://ctfd.teamctf.com)'
+echo -e '  $GITHUB_REMOTE\tURL of the git remote to push to (exmaple: git@github.com:teamctf/ctfd.teamctf.com.git)'
