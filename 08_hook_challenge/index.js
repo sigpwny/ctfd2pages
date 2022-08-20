@@ -41,14 +41,12 @@ const makeFlagsJson = async () => {
     const flagsJson = JSON.parse(await realfs.promises.readFile(
         `${EXPORT_PATH}/db/flags.json`));
     for (const entry of flagsJson.results) {
-      const id = entry.challenge_id;
+      const {challenge_id: id, content: flag} = entry;
       if (!chalIds.includes(id)) {
-        console.log(chalIds, id);
-        console.log(`Unknown challenge id ${id}`);
+        console.log(`Unknown challenge id ${id} with flag "${flag}"`);
         continue;
       }
 
-      const flag = entry.content;
       const hash = crypto.createHash('sha256').update(flag).digest('hex');
 
       if (flags[id] === undefined) {
