@@ -1,5 +1,5 @@
 // Compile with:
-// $ emcc fuzzysearch_native.c -sEXPORTED_FUNCTIONS=_fuzzysearch,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,getValue -sALLOW_MEMORY_GROWTH -O2 -o fuzzysearch_native.js
+// $ emcc fuzzysearch_native.c -sEXPORTED_FUNCTIONS=_fuzzysearch,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,getValue -sALLOW_MEMORY_GROWTH=1 -sNODEJS_CATCH_REJECTION=0 -sNODEJS_CATCH_EXIT=0 -O2 -o fuzzysearch_native.js
 
 #include <assert.h>
 #include <stdbool.h>
