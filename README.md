@@ -2,8 +2,8 @@
 
 Links rot, which would be especially sad when you have a beautifully themed
 CTFd website :(. None of the existing CTFd archival technologies archive the
-entire website and keep it browsable; they only archive the handouts and the
-challenge descriptions, in most cases.
+entire website and keep it browsable; in most cases, they only archive the
+handouts and the challenge descriptions.
 
 This is why we created ctfd2pages. Github Pages can now host a static version
 of a CTFd site long after the CTF event is over.
@@ -37,7 +37,7 @@ Stages:
 
 Each stage will operate on the git repository, but will not push unless
 otherwise specified. To see what each stage does check `run.sh` for the
-commit title, and `stage.sh` for the executed command.
+commit title, and `stage.sh` for the executed commands.
 
 Feel free to ask on the [SIGPwny Discord](https://sigpwny.com/discord) if you
 need help or have any questions.
