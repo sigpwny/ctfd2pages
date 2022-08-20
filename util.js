@@ -57,32 +57,25 @@ exports.expandHTMLs = (basenode, direction, condition) => {
   return result;
 };
 
-exports.deleteHtmlWithFixup = async (orightml, deletion, state) => {
-  const makeRegex = (string) => {
-    // eslint-disable-next-line max-len
-    return `(?:(?<=\n)[ \t]*)?${exports.regexEscape(string)}([ \t]*(?:\n|\r\n))?`;
-  };
+exports.makeRegexForLine = (string) => {
+  // eslint-disable-next-line max-len
+  return `(?:(?:(?<=\n)|^)[ \t]*)?${exports.regexEscape(string)}([ \t]*(?:\n|\r\n))?`;
+};
 
-  let newhtml = orightml;
-
-  if (exports.countSubstring(newhtml, deletion) === 1) {
+exports.findWithFixup = async (haystack, needle, state) => {
+  if (exports.countSubstring(haystack, needle) === 1) {
     // Simple case
-    newhtml = newhtml.replace( new RegExp(makeRegex(deletion)), '');
-    assert(newhtml !== orightml);
-  } else if (state.data && deletion === state.data[0] &&
-             exports.countSubstring(newhtml, state.data[1]) === 1) {
+    return needle;
+  } else if (state.data && needle === state.data[0] &&
+             exports.countSubstring(haystack, state.data[1]) === 1) {
     // Use cached fixup
-    newhtml = newhtml.replace( new RegExp(makeRegex(state.data[1])), '');
-    assert(newhtml !== orightml);
+    return state.data[1];
   } else {
     // Fuzzy search this
-    const fixup = await fuzzysearchSlice(newhtml, deletion);
-    assert(exports.countSubstring(newhtml, fixup) === 1);
-    state.data = [deletion, fixup];
+    const fixup = await fuzzysearchSlice(haystack, needle);
+    assert(exports.countSubstring(haystack, fixup) === 1);
+    state.data = [needle, fixup];
 
-    newhtml = newhtml.replace( new RegExp(makeRegex(fixup)), '');
-    assert(newhtml !== orightml);
+    return fixup;
   }
-
-  return newhtml;
 };

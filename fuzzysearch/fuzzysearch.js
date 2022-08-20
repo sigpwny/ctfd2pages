@@ -22,5 +22,6 @@ exports.fuzzysearch = async (haystack, needle) => {
 
 exports.fuzzysearchSlice = async (haystack, needle) => {
   const [start, end] = await exports.fuzzysearch(haystack, needle);
-  return haystack.slice(start, end);
+  const utf8 = new TextEncoder().encode(haystack);
+  return new TextDecoder().decode(utf8.slice(start, end));
 };
