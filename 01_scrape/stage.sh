@@ -1,2 +1,2 @@
 cd "$DIR"
-node index.js "$CTFD_URL" "$CTFD_REPO"
+node index.js "$CTFD_URL" "$PAGES_REPO"

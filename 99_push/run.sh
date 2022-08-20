@@ -6,5 +6,5 @@ source "$DIR"/../lib.sh
 verify_env
 
 set -ex
-git -C "$CTFD_REPO" pull -r
-git -C "$CTFD_REPO" push -u origin main
+git -C "$PAGES_REPO" pull -r
+git -C "$PAGES_REPO" push -u origin main

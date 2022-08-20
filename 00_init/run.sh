@@ -6,7 +6,7 @@ source "$DIR"/../lib.sh
 verify_env
 
 set -ex
-mkdir -p "$CTFD_REPO"
-git -C "$CTFD_REPO" init
-git -C "$CTFD_REPO" remote add origin "$GITHUB_REMOTE"
-git -C "$CTFD_REPO" branch -M main
+mkdir -p "$PAGES_REPO"
+git -C "$PAGES_REPO" init
+git -C "$PAGES_REPO" remote add origin "$GITHUB_REMOTE"
+git -C "$PAGES_REPO" branch -M main

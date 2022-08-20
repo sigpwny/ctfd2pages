@@ -23,6 +23,6 @@ for STAGE in "$DIR"/*/; do
   fi
 done
 echo 'Required environment variables:'
-echo -e '  $CTFD_REPO\t\tPath to the repository of GitHub Pages (example: ~/ctfd-pages)'
+echo -e '  $PAGES_REPO\t\tPath to the repository of GitHub Pages (example: ~/ctfd-pages)'
 echo -e '  $CTFD_URL\t\tURL of the CTFd website (example: https://ctfd.teamctf.com)'
 echo -e '  $GITHUB_REMOTE\tURL of the git remote to push to (exmaple: git@github.com:teamctf/ctfd.teamctf.com.git)'
