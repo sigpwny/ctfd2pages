@@ -241,7 +241,7 @@ class PageHandler {
         // Solves Tab
         this.browseCompleted = new HeartBeat();
         await page.evaluate(() => {
-          document.querySelector('.nav-link.challenge-solves').click();
+          document.querySelector('.challenge-solves').click();
         }, chal);
         await this.browseCompleted.wait();
 
