@@ -1,4 +1,5 @@
 const assert = require('node:assert');
+const glob = require('glob');
 
 const {fuzzysearchSlice} = require('./fuzzysearch/fuzzysearch.js');
 
@@ -79,3 +80,13 @@ exports.findWithFixup = async (haystack, needle, state) => {
     return fixup;
   }
 };
+
+exports.globPromise = (pattern, options) => new Promise((resolve, reject) => {
+  glob(pattern, options, function(err, files) {
+    if (err) {
+      reject(err);
+    } else {
+      resolve(files);
+    }
+  });
+});

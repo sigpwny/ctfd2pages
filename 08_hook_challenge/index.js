@@ -3,7 +3,6 @@ const crypto = require('node:crypto');
 const realfs = require('node:fs');
 const path = require('node:path');
 
-const glob = require('glob');
 const {JSDOM} = require('jsdom');
 const {Volume} = require('memfs');
 const {Union} = require('unionfs');
@@ -18,18 +17,8 @@ const {PAGES_REPO, CHAL_REPO, EXPORT_PATH} = process.env;
 const INJECTED_JS_PATH = '/ctfd2pages/hooks/challenges.min.js';
 
 const makeFlagsJson = async () => {
-  const globPromise = (pattern, options) => new Promise((resolve, reject) => {
-    glob(pattern, options, function(err, files) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(files);
-      }
-    });
-  });
-
   const chalname2id = {};
-  for (const chalJsonPath of await globPromise(
+  for (const chalJsonPath of await util.globPromise(
       `${PAGES_REPO}/api/v1/challenges/*/index.json`)) {
     const chalJson = JSON.parse(await realfs.promises.readFile(chalJsonPath));
     chalname2id[chalJson.data.name] = chalJson.data.id;
@@ -55,7 +44,7 @@ const makeFlagsJson = async () => {
       flags[id].push(hash);
     }
   } else {
-    for (const chalYmlPath of await globPromise(
+    for (const chalYmlPath of await util.globPromise(
         `${CHAL_REPO}/**/challenge.yml`)) {
       yaml.loadAll(await realfs.promises.readFile(chalYmlPath), (doc) => {
         const name = doc.name;

@@ -4,11 +4,16 @@ const {JSDOM} = require('jsdom');
 
 const util = require('../util.js');
 
+const {PAGES_REPO} = process.env;
+
 const main = async function() {
-  const files = process.argv.slice(2);
   const lastFixup = {};
 
-  for (const file of files) {
+  for (const file of [
+    ...await util.globPromise(`${PAGES_REPO}/*.html`),
+    ...await util.globPromise(`${PAGES_REPO}/teams/*.html`),
+    ...await util.globPromise(`${PAGES_REPO}/users/*.html`),
+  ]) {
     console.log(file);
 
     const inputhtml = fs.readFileSync(file, 'utf8');
