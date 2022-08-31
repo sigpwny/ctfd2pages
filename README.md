@@ -13,6 +13,15 @@ challenges, are not in scope of this project, unfortunately. Though I guess
 you can try to figure the challenges out from the given handouts (if any) or
 public releases of challenge source code repositories (if available).
 
+### Examples
+
+A ~~picture~~ live site is worth a thousand words:
+
+- UIUCTF [2020](https://2020.uiuc.tf/), [2021](https://2021.uiuc.tf/),
+  [2022](https://2022.uiuc.tf/)
+- MapleCTF [2022](https://ctf2022.maplebacon.org/)
+- (Feel free to send us a PR and add yours here)
+
 ## Usage
 
 It's mostly just bash and JavaScript. To install JS dependencies:
