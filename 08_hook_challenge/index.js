@@ -132,7 +132,8 @@ const main = async function() {
   const {document} = window;
 
   let targetNode = Array.from(document.querySelectorAll('script'))
-      .filter((node) => node.attributes.src?.value?.length);
+      .filter((node) => node.attributes.src?.value?.length &&
+          node.attributes.defer);
 
   assert(targetNode.length);
   targetNode = targetNode.at(-1);
