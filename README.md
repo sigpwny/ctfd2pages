@@ -20,6 +20,7 @@ A ~~picture~~ live site is worth a thousand words:
 - UIUCTF [2020](https://2020.uiuc.tf/), [2021](https://2021.uiuc.tf/),
   [2022](https://2022.uiuc.tf/)
 - MapleCTF [2022](https://ctf2022.maplebacon.org/)
+- SekaiCTF [2022](https://2022.ctf.sekai.team/)
 - (Feel free to send us a PR and add yours here)
 
 ## Usage
