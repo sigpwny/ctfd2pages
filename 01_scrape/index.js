@@ -216,15 +216,14 @@ class PageHandler {
     } else if (this.pageUrl === `${this.parent.origin}challenges`) {
       const chals = await page.evaluate(() => {
         return Array.from(document.querySelectorAll(
-            '.challenge-button')).map((e) => e.parentElement.id);
+            '.challenge-button')).map((e) => e.value);
       });
 
       for (const chal of chals) {
         // Challenge Tab
         this.browseCompleted = new HeartBeat();
         await page.evaluate((chal) => {
-          document.getElementById(chal)
-              .querySelector('.challenge-button')
+          document.querySelector(`.challenge-button[value="${chal}"]`)
               .click();
         }, chal);
         await this.browseCompleted.wait();
