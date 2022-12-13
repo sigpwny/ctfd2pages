@@ -209,30 +209,20 @@ class PageHandler {
   async handleSpecials(page) {
     if (this.pageUrl === `${this.parent.origin}`) {
       // Puppeteer headless don't fetch favicon
-      const favicon = await page.evaluate(() => {
-        return document.querySelector('link[rel*=\'icon\']').href;
-      });
+      const favicon = await page.$eval('link[rel*=\'icon\']',
+          (e) => e.href);
       this.parent.allHandouts.add(favicon);
     } else if (this.pageUrl === `${this.parent.origin}challenges`) {
-      const chals = await page.evaluate(() => {
-        return Array.from(document.querySelectorAll(
-            '.challenge-button')).map((e) => e.parentElement.id);
-      });
+      const chals = await page.$$('.challenge-button');
 
       for (const chal of chals) {
         // Challenge Tab
         this.browseCompleted = new HeartBeat();
-        await page.evaluate((chal) => {
-          document.getElementById(chal)
-              .querySelector('.challenge-button')
-              .click();
-        }, chal);
+        await chal.click();
         await this.browseCompleted.wait();
 
-        const handouts = await page.evaluate(() => {
-          return Array.from(document.querySelectorAll(
-              '.challenge-files a')).map((e) => e.href);
-        });
+        const handouts = await page.$$eval('.challenge-files a',
+            (l) => l.map((e) => e.href));
         for (const handout of handouts) {
           assert(handout.startsWith(this.parent.origin));
           this.parent.allHandouts.add(handout);
@@ -240,12 +230,12 @@ class PageHandler {
 
         // Solves Tab
         this.browseCompleted = new HeartBeat();
-        await page.evaluate(() => {
-          document.querySelector('.challenge-solves').click();
-        }, chal);
+        await (await page.$('.challenge-solves')).click();
         await this.browseCompleted.wait();
 
+        await sleep(500);
         await page.keyboard.press('Escape');
+        await sleep(500);
       }
     }
   }
@@ -261,9 +251,8 @@ class PageHandler {
 
     await this.browseCompleted.wait();
 
-    const links = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('a')).map((e) => e.href);
-    });
+    const links = await page.$$eval('a',
+        (l) => l.map((e) => e.href));
 
     for (let link of links) {
       if (!link.startsWith(this.parent.origin)) {
