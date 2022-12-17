@@ -1,7 +1,4 @@
-/* global CTFd */
-
-const FLAGS = require('./flags.json');
-const md = CTFd.lib.markdown();
+const FLAGS = require('../flags.json');
 
 const sha256sum = async (string) => {
   const utf8 = new TextEncoder().encode(string);
@@ -11,8 +8,7 @@ const sha256sum = async (string) => {
       .join('');
 };
 
-CTFd.api.post_challenge_attempt = async function(parameters, body) {
-  const {challenge_id: chalId, submission: flag} = body;
+exports.submitChallenge = () => async function(chalId, flag) {
   const expectedSHA = FLAGS[chalId];
   const submittedSHA = await sha256sum(flag);
 
@@ -46,10 +42,8 @@ CTFd.api.post_challenge_attempt = async function(parameters, body) {
   }
 };
 
-CTFd.api.get_hint = async function(parameters) {
-  const hintId = parameters.hintId;
-
-  for (const hintOrig of CTFd._internal.challenge.data.hints) {
+exports.loadHint = (md, hintsfn) => async function(hintId) {
+  for (const hintOrig of hintsfn()) {
     if (hintOrig.id !== hintId) {
       continue;
     }
