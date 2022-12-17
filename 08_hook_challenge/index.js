@@ -12,7 +12,7 @@ const yaml = require('js-yaml');
 
 const util = require('../util.js');
 
-const {PAGES_REPO, CHAL_REPO, EXPORT_PATH} = process.env;
+const {PAGES_REPO, CHAL_REPO, EXPORT_PATH, IS_CORE_BETA} = process.env;
 
 const INJECTED_JS_PATH = '/ctfd2pages/hooks/challenges.min.js';
 
@@ -75,7 +75,7 @@ const makeFlagsJson = async () => {
   return flags;
 };
 
-const makeWebpack = async (flags) => {
+const makeWebpack = async (flags, isBetaTheme) => {
   const memfs = Volume.fromJSON({'./flags.json': JSON.stringify(flags)});
 
   const ufs = new Union();
@@ -83,9 +83,10 @@ const makeWebpack = async (flags) => {
 
   await new Promise((resolve, reject) => {
     const compiler = webpack({
-      mode: 'development',
+      mode: 'production',
       devtool: 'hidden-cheap-source-map',
-      entry: './webpack-index.js',
+      entry: isBetaTheme ?
+        './webpack/index-core-beta.js' : './webpack/index-core.js',
       output: {
         filename: 'challenges.min.js',
       },
@@ -117,19 +118,39 @@ const makeWebpack = async (flags) => {
   return await memfs.promises.readFile('dist/challenges.min.js');
 };
 
+const detectBetaTheme = function(document) {
+  if (IS_CORE_BETA === '1') {
+    console.log('$IS_CORE_BETA=1, assuming theme is based on core-beta');
+    return true;
+  } else if (IS_CORE_BETA === '0') {
+    console.log('$IS_CORE_BETA=0, assuming theme is based on core');
+    return false;
+  } else if (document.querySelector('template')) {
+    console.log('Theme seems to be based on core-beta intead of core.');
+    console.log('If this is wrong set $IS_CORE_BETA=0');
+    return true;
+  } else {
+    console.log('Theme seems to be based on core intead of core-beta.');
+    console.log('If this is wrong set $IS_CORE_BETA=1');
+    return false;
+  }
+};
+
 const main = async function() {
   const challengesHtml = PAGES_REPO + '/challenges.html';
   const challengesJs = PAGES_REPO + INJECTED_JS_PATH;
 
-  const flags = await makeFlagsJson();
-  const chalBundled = await makeWebpack(flags);
-  await realfs.promises.mkdir(
-      path.dirname(challengesJs), {recursive: true});
-  await realfs.promises.writeFile(challengesJs, chalBundled);
-
   const inputhtml = realfs.readFileSync(challengesHtml, 'utf8');
   const {window} = new JSDOM(inputhtml);
   const {document} = window;
+
+  const isBetaTheme = detectBetaTheme(document);
+
+  const flags = await makeFlagsJson();
+  const chalBundled = await makeWebpack(flags, isBetaTheme);
+  await realfs.promises.mkdir(
+      path.dirname(challengesJs), {recursive: true});
+  await realfs.promises.writeFile(challengesJs, chalBundled);
 
   let targetNode = Array.from(document.querySelectorAll('script'))
       .filter((node) => node.attributes.src?.value?.length &&
