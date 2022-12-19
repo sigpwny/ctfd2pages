@@ -21,6 +21,7 @@ A ~~picture~~ live site is worth a thousand words:
   [2022](https://2022.uiuc.tf/)
 - MapleCTF [2022](https://ctf2022.maplebacon.org/)
 - SekaiCTF [2022](https://2022.ctf.sekai.team/)
+- KITCTFCTF [2022](https://2022.ctf.kitctf.de/)
 - (Feel free to send us a PR and add yours here)
 
 ## Usage
