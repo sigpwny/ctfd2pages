@@ -18,6 +18,7 @@ do_stage() {
   verify_env
 
   set -ex
+  shopt -s nullglob
   (cd "$PAGES_REPO" && source "$DIR"/stage.sh)
 
   git -C "$PAGES_REPO" add -A
