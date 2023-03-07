@@ -1,5 +1,6 @@
 const assert = require('node:assert');
 const fs = require('node:fs');
+const glob = require('glob');
 const {JSDOM} = require('jsdom');
 
 const util = require('../util.js');
@@ -10,8 +11,8 @@ const main = async function() {
   const lastFixup = {};
 
   for (const file of [
-    ...await util.globPromise(`${PAGES_REPO}/teams*.html`),
-    ...await util.globPromise(`${PAGES_REPO}/users*.html`),
+    ...await glob(`${PAGES_REPO}/teams*.html`),
+    ...await glob(`${PAGES_REPO}/users*.html`),
   ]) {
     console.log(file);
 
