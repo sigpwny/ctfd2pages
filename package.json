@@ -1,7 +1,7 @@
 {
   "private": true,
   "dependencies": {
-    "glob": "^9.2.1",
+    "glob": "^10.0.0",
     "js-yaml": "^4.1.0",
     "jsdom": "^21.0.0",
     "markdown-it": "^13.0.1",
