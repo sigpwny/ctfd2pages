@@ -5,7 +5,7 @@
     "js-yaml": "^4.1.0",
     "jsdom": "^22.0.0",
     "markdown-it": "^13.0.1",
-    "memfs": "^3.4.7",
+    "memfs": "^4.2.0",
     "puppeteer": "^20.2.1",
     "unionfs": "^4.4.0",
     "webpack": "^5.74.0"
