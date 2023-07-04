@@ -1,6 +1,6 @@
 const assert = require('node:assert');
 const fs = require('node:fs');
-const glob = require('glob');
+const {glob} = require('glob');
 const {JSDOM} = require('jsdom');
 
 const util = require('../util.js');

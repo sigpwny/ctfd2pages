@@ -3,7 +3,7 @@ const crypto = require('node:crypto');
 const realfs = require('node:fs');
 const path = require('node:path');
 
-const glob = require('glob');
+const {glob} = require('glob');
 const {JSDOM} = require('jsdom');
 const {Volume} = require('memfs');
 const {Union} = require('unionfs');
