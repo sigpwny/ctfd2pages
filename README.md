@@ -18,7 +18,7 @@ public releases of challenge source code repositories (if available).
 A ~~picture~~ live site is worth a thousand words:
 
 - UIUCTF [2020](https://2020.uiuc.tf/), [2021](https://2021.uiuc.tf/),
-  [2022](https://2022.uiuc.tf/)
+  [2022](https://2022.uiuc.tf/), [2023](https://2023.uiuc.tf/)
 - MapleCTF [2022](https://ctf2022.maplebacon.org/)
 - SekaiCTF [2022](https://2022.ctf.sekai.team/)
 - KITCTFCTF [2022](https://2022.ctf.kitctf.de/)
