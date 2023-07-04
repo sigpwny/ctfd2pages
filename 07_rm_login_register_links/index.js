@@ -15,6 +15,10 @@ const main = async function() {
     ...await glob(`${PAGES_REPO}/teams/*.html`),
     ...await glob(`${PAGES_REPO}/users/*.html`),
   ]) {
+    if (file === `${PAGES_REPO}/index.html`) {
+      continue;
+    }
+
     console.log(file);
 
     const inputhtml = fs.readFileSync(file, 'utf8');

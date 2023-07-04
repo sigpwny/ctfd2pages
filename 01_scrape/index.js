@@ -214,6 +214,94 @@ class PageHandler {
       const favicon = await page.$eval('link[rel*=\'icon\']',
           (e) => e.href);
       this.parent.allHandouts.add(favicon);
+
+      await page.evaluate('desktop.closeAllPanes();');
+
+      /* BEGIN UIUCTF 2023 THEME */
+      let startButton = await page.$$('a.nav-link');
+      assert(startButton.length === 1);
+      [startButton] = startButton;
+
+      for (const mainOption of await page.$$(
+          '.main-options div:not([style*="display: none"]):not([disabled])')) {
+        const optionName = (
+          await mainOption.evaluate((el) => el.textContent)).trim();
+        console.log('* ', optionName);
+
+        if (!await mainOption.isVisible()) {
+          await softclick(startButton);
+        }
+
+        this.browseCompleted = new HeartBeat();
+        await softclick(mainOption);
+        await this.browseCompleted.heartbeat(250);
+        await this.browseCompleted.wait();
+
+        switch (optionName) {
+          case 'Challenges':
+            const chals = await page.$$(
+                '.card-tertiary .card-body .bg-white .flex-column');
+
+            for (const chal of chals) {
+              // Challenge Tab
+              this.browseCompleted = new HeartBeat();
+              await this.browseCompleted.heartbeat(250);
+              await softclick(chal);
+              await this.browseCompleted.wait();
+
+              // Defer handout loading to the chal page of regular theme
+
+              // Solves Tab
+              this.browseCompleted = new HeartBeat();
+              await softclick(await page.$(
+                  '.card-tertiary .card-body ul[role=tablist] ' +
+                  'li.nav-item:nth-child(2) a'));
+              await this.browseCompleted.wait();
+
+              await softclick(await page.$(
+                  '.card-tertiary .card-header .close-icon'));
+            }
+            break;
+          case 'Scoreboard':
+            const teams = await page.$$(
+                '.card-tertiary .card-body table a');
+            for (const team of teams) {
+              this.browseCompleted = new HeartBeat();
+              await softclick(team);
+              await this.browseCompleted.wait();
+
+              const teampage = await page.$('.card-tertiary');
+
+              const userlist = await page.$(
+                  '.card-tertiary .card-body div.row');
+              const users = await userlist.$$('a');
+              for (const user of users) {
+                this.browseCompleted = new HeartBeat();
+                await softclick(user);
+                await this.browseCompleted.wait();
+
+                await softclick(await page.$(
+                    '.card-tertiary .card-header .close-icon'));
+              }
+
+              await softclick(await teampage.$('.card-header .close-icon'));
+            }
+            break;
+          case 'Information':
+            const buttons = await page.$$(
+                '.card-tertiary .card-body .btn-primary');
+            for (const button of buttons) {
+              this.browseCompleted = new HeartBeat();
+              await this.browseCompleted.heartbeat(250);
+              await softclick(button);
+              await this.browseCompleted.wait();
+            }
+        }
+
+        await page.evaluate('desktop.createConfirmClosePane();');
+        await page.evaluate('desktop.closeAllPanes();');
+      }
+      /* END UIUCTF 2023 THEME */
     } else if (this.pageUrl === `${this.parent.origin}challenges`) {
       const chals = await page.$$('.challenge-button');
 
