@@ -174,6 +174,7 @@ const main = async function() {
       inputhtml, nodehtmlline, nodehtmlline + duphtml);
 
   realfs.writeFileSync(challengesHtml, outputhtml);
+  window.close();
 
   return 0;
 };

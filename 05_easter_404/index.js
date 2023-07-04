@@ -52,6 +52,7 @@ const main = async function() {
   );
 
   fs.writeFileSync(file, outputhtml);
+  window.close();
 
   return 0;
 };

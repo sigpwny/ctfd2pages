@@ -36,6 +36,7 @@ const main = async function() {
     assert(outputhtml !== inputhtml);
 
     fs.writeFileSync(file, outputhtml);
+    window.close();
   }
 
   return 0;
