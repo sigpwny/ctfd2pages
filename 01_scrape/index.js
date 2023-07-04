@@ -207,6 +207,8 @@ class PageHandler {
   }
 
   async handleSpecials(page) {
+    const softclick = (handle) => handle.evaluate((el) => el.click());
+
     if (this.pageUrl === `${this.parent.origin}`) {
       // Puppeteer headless don't fetch favicon
       const favicon = await page.$eval('link[rel*=\'icon\']',
@@ -218,7 +220,7 @@ class PageHandler {
       for (const chal of chals) {
         // Challenge Tab
         this.browseCompleted = new HeartBeat();
-        await chal.click();
+        await softclick(chal);
         await this.browseCompleted.wait();
 
         const handouts = await page.$$eval('.challenge-files a',
@@ -230,7 +232,7 @@ class PageHandler {
 
         // Solves Tab
         this.browseCompleted = new HeartBeat();
-        await (await page.$('.challenge-solves')).click();
+        await softclick(await page.$('.challenge-solves'));
         await this.browseCompleted.wait();
 
         await sleep(500);
