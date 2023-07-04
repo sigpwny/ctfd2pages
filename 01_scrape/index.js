@@ -359,7 +359,7 @@ class Ctfd2Pages {
   }
 
   async run() {
-    const browser = await puppeteer.launch({headless: true});
+    const browser = await puppeteer.launch({headless: 'new'});
 
     this.pushpage(this.origin);
     this.pushpage(`${this.origin}404`);
