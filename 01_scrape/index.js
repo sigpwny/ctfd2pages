@@ -204,6 +204,31 @@ class PageHandler {
         }
       }
     });
+
+    // consider pages with text/event-stream failed since they never finish
+    // responding and cannot be archived.
+    // https://github.com/sigpwny/ctfd2pages/issues/13#issuecomment-1621129029
+    page.on('response', (response) => {
+      const request = response.request();
+      const requestUrl = request.url();
+
+      let contenttype = response.headers()['content-type'];
+      if (!contenttype) {
+        return;
+      }
+      if (contenttype.includes(';')) {
+        contenttype = contenttype.substring(0, contenttype.indexOf(';'));
+      }
+
+      if (contenttype === 'text/event-stream') {
+        if (requestUrl.startsWith(this.parent.origin)) {
+          this.pendingRequests.delete(requestUrl);
+          heartbeat();
+
+          this.parent.completedPaths.add(this.parent.urlToPath(requestUrl));
+        }
+      }
+    });
   }
 
   async handleSpecials(page) {
