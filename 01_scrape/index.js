@@ -246,6 +246,15 @@ class PageHandler {
     const page = await this.browser.newPage();
     this.browseCompleted = new HeartBeat();
 
+    // Allow fetching large resources
+    // https://github.com/sigpwny/ctfd2pages/issues/13#issuecomment-1621091707
+    // https://github.com/puppeteer/puppeteer/issues/1599#issuecomment-355473214
+    // https://github.com/puppeteer/puppeteer/issues/6647#issuecomment-1610949415
+    page._client().send('Network.enable', {
+      maxResourceBufferSize: 100 << 20,
+      maxTotalBufferSize: 200 << 20,
+    });
+
     this.setHooks(page);
 
     console.log('visiting:', this.pageUrl);
