@@ -37,12 +37,12 @@ const main = async function() {
       'Sorry about that',
       // eslint-disable-next-line max-len
       'This site has been archived and is now served statically by GitHub Pages',
-      (src) => textNodes.filter((node) => node.textContent === src),
+      (src) => textNodes.filter((node) => node.textContent.trim() === src),
   );
   findReplace(
       'Powered by CTFd',
       'Powered by <s>CTFd</s> GitHub Pages',
-      (src) => textNodes.filter((node) => node.textContent === src),
+      (src) => textNodes.filter((node) => node.textContent.trim() === src),
   );
   findReplace(
       'https://ctfd.io',
