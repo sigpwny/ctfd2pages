@@ -11,7 +11,7 @@
     "webpack": "^5.74.0"
   },
   "devDependencies": {
-    "eslint": "^8.21.0",
+    "eslint": "^9.8.0",
     "eslint-config-google": "^0.14.0"
   }
 }
