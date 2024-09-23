@@ -3,7 +3,7 @@
   "dependencies": {
     "glob": "^10.0.0",
     "js-yaml": "^4.1.0",
-    "jsdom": "^24.1.1",
+    "jsdom": "^25.0.1",
     "markdown-it": "^14.0.0",
     "memfs": "^4.2.0",
     "puppeteer": "^22.1.0",
