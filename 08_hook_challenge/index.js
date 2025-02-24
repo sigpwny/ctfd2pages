@@ -13,16 +13,16 @@ const yaml = require('js-yaml');
 
 const util = require('../util.js');
 
-const {PAGES_REPO, CHAL_REPO, EXPORT_PATH, IS_CORE_BETA} = process.env;
+const {PAGES_REPO, CHAL_REPO, EXPORT_PATH} = process.env;
 
 const INJECTED_JS_PATH = '/ctfd2pages/hooks/challenges.min.js';
 
 const makeFlagsJson = async () => {
   const chalname2id = {};
-  for (const chalJsonPath of await glob(
-      `${PAGES_REPO}/api/v1/challenges/*/index.json`)) {
-    const chalJson = JSON.parse(await realfs.promises.readFile(chalJsonPath));
-    chalname2id[chalJson.data.name] = chalJson.data.id;
+  const chalJson = JSON.parse(await realfs.promises.readFile(
+      `${PAGES_REPO}/api/v1/challs/index.json`));
+  for (const chal of chalJson.data) {
+    chalname2id[chal.name] = chal.id;
   }
 
   const flags = {};
@@ -46,7 +46,7 @@ const makeFlagsJson = async () => {
     }
   } else {
     for (const chalYmlPath of await glob(
-        `${CHAL_REPO}/**/challenge.yml`)) {
+        `${CHAL_REPO}/**/challenge.yaml`)) {
       yaml.loadAll(await realfs.promises.readFile(chalYmlPath), (doc) => {
         const name = doc.name;
         if (!(name in chalname2id)) {
@@ -55,7 +55,7 @@ const makeFlagsJson = async () => {
         }
         const id = chalname2id[name];
 
-        for (const flag of doc.flags) {
+        for (const flag of [doc.flag]) {
           const hash = crypto.createHash('sha256').update(flag).digest('hex');
 
           if (flags[id] === undefined) {
@@ -72,11 +72,10 @@ const makeFlagsJson = async () => {
       console.log(`No flag found for challenge ${name}`);
     }
   }
-
   return flags;
 };
 
-const makeWebpack = async (flags, isBetaTheme) => {
+const makeWebpack = async (flags) => {
   const memfs = Volume.fromJSON({'./flags.json': JSON.stringify(flags)});
 
   const ufs = new Union();
@@ -86,8 +85,7 @@ const makeWebpack = async (flags, isBetaTheme) => {
     const compiler = webpack({
       mode: 'production',
       devtool: 'hidden-cheap-source-map',
-      entry: isBetaTheme ?
-        './webpack/index-core-beta.js' : './webpack/index-core.js',
+      entry: './webpack/index.js',
       output: {
         filename: 'challenges.min.js',
       },
@@ -119,24 +117,6 @@ const makeWebpack = async (flags, isBetaTheme) => {
   return await memfs.promises.readFile('dist/challenges.min.js');
 };
 
-const detectBetaTheme = function(document) {
-  if (IS_CORE_BETA === '1') {
-    console.log('$IS_CORE_BETA=1, assuming theme is based on core-beta');
-    return true;
-  } else if (IS_CORE_BETA === '0') {
-    console.log('$IS_CORE_BETA=0, assuming theme is based on core');
-    return false;
-  } else if (document.querySelector('template')) {
-    console.log('Theme seems to be based on core-beta intead of core.');
-    console.log('If this is wrong set $IS_CORE_BETA=0');
-    return true;
-  } else {
-    console.log('Theme seems to be based on core intead of core-beta.');
-    console.log('If this is wrong set $IS_CORE_BETA=1');
-    return false;
-  }
-};
-
 const main = async function() {
   const challengesHtml = PAGES_REPO + '/challenges.html';
   const challengesJs = PAGES_REPO + INJECTED_JS_PATH;
@@ -145,35 +125,35 @@ const main = async function() {
   const {window} = new JSDOM(inputhtml);
   const {document} = window;
 
-  const isBetaTheme = detectBetaTheme(document);
-
   const flags = await makeFlagsJson();
-  const chalBundled = await makeWebpack(flags, isBetaTheme);
+  console.log(flags);
+
+  const chalBundled = await makeWebpack(flags);
   await realfs.promises.mkdir(
       path.dirname(challengesJs), {recursive: true});
   await realfs.promises.writeFile(challengesJs, chalBundled);
 
-  let targetNode = Array.from(document.querySelectorAll('script'))
-      .filter((node) => node.attributes.src?.value?.length &&
-          node.attributes.defer);
-
-  assert(targetNode.length);
-  targetNode = targetNode.at(-1);
-
-  const nodehtml = await util.findWithFixup(
-      inputhtml, targetNode.outerHTML, {});
-
-  const [nodehtmlline] = inputhtml.match(
-      new RegExp(util.makeRegexForLine(nodehtml)));
-  assert(nodehtmlline);
-
-  const duphtml = util.replaceOnce(
-      nodehtmlline, targetNode.attributes.src.value, INJECTED_JS_PATH);
-
-  const outputhtml = util.replaceOnce(
-      inputhtml, nodehtmlline, nodehtmlline + duphtml);
-
-  realfs.writeFileSync(challengesHtml, outputhtml);
+  // let targetNode = Array.from(document.querySelectorAll('script'))
+  //     .filter((node) => node.attributes.src?.value?.length &&
+  //         node.attributes.defer);
+  //
+  // assert(targetNode.length);
+  // targetNode = targetNode.at(-1);
+  //
+  // const nodehtml = await util.findWithFixup(
+  //     inputhtml, targetNode.outerHTML, {});
+  //
+  // const [nodehtmlline] = inputhtml.match(
+  //     new RegExp(util.makeRegexForLine(nodehtml)));
+  // assert(nodehtmlline);
+  //
+  // const duphtml = util.replaceOnce(
+  //     nodehtmlline, targetNode.attributes.src.value, INJECTED_JS_PATH);
+  //
+  // const outputhtml = util.replaceOnce(
+  //     inputhtml, nodehtmlline, nodehtmlline + duphtml);
+  //
+  // realfs.writeFileSync(challengesHtml, outputhtml);
   window.close();
 
   return 0;

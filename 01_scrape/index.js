@@ -135,15 +135,55 @@ class PageHandler {
     });
 
     page.on('requestfinished', async (request) => {
-      const requestUrl = request.url();
+      let requestUrl = request.url();
       const response = request.response();
       const originRedirect = this.redirectedTargets.get(requestUrl);
 
       this.pendingRequests.delete(requestUrl);
       heartbeat();
 
+      if (requestUrl.startsWith('https://rctf.2024.uiuc.tf/')) {
+        // Pretend to be in the same domain
+        assert(requestUrl.startsWith('https://rctf.2024.uiuc.tf/api/'));
+        requestUrl = requestUrl.replace(/^https:\/\/rctf\.2024\.uiuc\.tf\//,
+            'https://2024.uiuc.tf/');
+
+        if (request.method().toUpperCase() === 'OPTIONS') {
+          return;
+        }
+      }
+
       if (requestUrl.startsWith(this.parent.origin)) {
         this.parent.completedPaths.add(this.parent.urlToPath(requestUrl));
+      }
+
+      if (requestUrl.startsWith(this.parent.origin)) {
+        requestUrl = new url.URL(requestUrl);
+        if (requestUrl.pathname === '/icon1.svg') {
+          requestUrl.search = '';
+        }
+
+        for (const [key, value] of Array.from(requestUrl.searchParams)) {
+          if (requestUrl.pathname.startsWith('/api/')) {
+            if (key === 'limit' && value === '3000') {
+              requestUrl.searchParams.delete(key);
+            } else if (key === 'offset' && value === '0') {
+              requestUrl.searchParams.delete(key);
+            } else {
+              console.log(requestUrl);
+              assert(false);
+            }
+          } else {
+            if (['_rsc', 'id'].includes(key)) {
+              requestUrl.searchParams.delete(key);
+            } else {
+              console.log(requestUrl);
+              assert(false);
+            }
+          }
+        }
+        requestUrl = requestUrl.href;
+        console.log(requestUrl);
       }
 
       if (originRedirect || requestUrl.startsWith(this.parent.origin)) {
@@ -152,7 +192,7 @@ class PageHandler {
         if ((status >= 200 && status < 300) ||
             requestUrl === `${this.parent.origin}404`) {
           if (requestUrl === `${this.parent.origin}404`) {
-            assert(status === 404);
+            // assert(status === 404);
           }
 
           let filepath;
@@ -165,7 +205,8 @@ class PageHandler {
           // File extension added because sometimes an URL needs to be both a
           // page and a directory...
           if (!filepath.endsWith('.json') &&
-              response.headers()['content-type'] === 'application/json') {
+            response.headers()['content-type'] === 'application/json' ||
+            response.headers()['content-type'] === 'application/json; charset=utf-8') {
             filepath += '.json';
           }
           if (!filepath.endsWith('.html') && !filepath.includes('?') &&
@@ -235,12 +276,18 @@ class PageHandler {
     const softclick = (handle) => handle.evaluate((el) => el.click());
 
     if (this.pageUrl === `${this.parent.origin}`) {
+      // Login... RCTF moment
+      await page.evaluate(() => {
+        localStorage.setItem('token', 'vM26tmDaOhrEQFzShyLPh9MVDnoi/ceFE0u1O6+5/kYDLZf1QHkSDkV+r7nBaS2KjnLgfyolimOMe4HTHf4QfgKCNTGhLYVAxctpo55ZYkF4Fi5WpNHaI8fWriPx');
+      });
+
       // Puppeteer headless don't fetch favicon
       const favicon = await page.$eval('link[rel*=\'icon\']',
           (e) => e.href);
       this.parent.allHandouts.add(favicon);
     } else if (this.pageUrl === `${this.parent.origin}challenges`) {
-      const chals = await page.$$('.challenge-button');
+      // const chals = await page.$$('.challenge-button');
+      const chals = await page.$$('button.group');
 
       for (const chal of chals) {
         // Challenge Tab
@@ -248,19 +295,34 @@ class PageHandler {
         await softclick(chal);
         await this.browseCompleted.wait();
 
-        const handouts = await page.$$eval('.challenge-files a',
-            (l) => l.map((e) => e.href));
-        for (const handout of handouts) {
-          assert(handout.startsWith(this.parent.origin));
-          this.parent.allHandouts.add(handout);
+        const els = await page.$$('div.fixed[role=document] p');
+        let handouts = undefined;
+        for (const el of els) {
+          let content = await el.getProperty('textContent');
+          content = await content.jsonValue();
+          if (content === 'Downloads') {
+            handouts = el;
+            break;
+          }
+        }
+
+        if (handouts !== undefined) {
+          handouts = await handouts.getProperty('parentNode');
+          handouts = await handouts.$$eval('a', (l) => l.map((e) => e.href));
+
+          for (const handout of handouts) {
+            // assert(handout.startsWith(this.parent.origin));
+            assert(handout.startsWith('https://uiuctf-2024-rctf-challenge-uploads.storage.googleapis.com/uploads/'));
+            this.parent.allHandouts.add(handout);
+          }
         }
 
         // Solves Tab
-        this.browseCompleted = new HeartBeat();
-        await softclick(await page.$('.challenge-solves'));
-        await this.browseCompleted.wait();
-
-        await sleep(500);
+        // this.browseCompleted = new HeartBeat();
+        // await softclick(await page.$('.challenge-solves'));
+        // await this.browseCompleted.wait();
+        //
+        // await sleep(500);
         await page.keyboard.press('Escape');
         await sleep(500);
       }
@@ -291,15 +353,24 @@ class PageHandler {
         (l) => l.map((e) => e.href));
 
     for (let link of links) {
-      if (!link.startsWith(this.parent.origin)) {
-        continue;
+      if (link.startsWith(this.parent.origin)) {
+        link = new url.URL(link);
+        link.hash = '';
+        for (const [key] of Array.from(link.searchParams)) {
+          if (key === '_rsc') {
+            link.searchParams.delete('_rsc');
+          } else if (key === 'id') {
+            // Noop
+          } else {
+            assert(false);
+          }
+        }
+        link = link.href;
+
+        this.parent.pushpage(link);
+      } else if (link.startsWith('https://rctf.2024.uiuc.tf/')) {
+        console.log(`!!!!!!!!!API PATH LINKED!!! ${link}`);
       }
-
-      link = new url.URL(link);
-      link.hash = '';
-      link = link.href;
-
-      this.parent.pushpage(link);
     }
 
     // Return this promise, then async handle special pages
@@ -396,6 +467,7 @@ class Ctfd2Pages {
     const browser = await puppeteer.launch({headless: 'new'});
 
     this.pushpage(this.origin);
+    // this.pushpage(`${this.origin}challenges`);
     this.pushpage(`${this.origin}404`);
 
     while (this.toVisit.length) {
@@ -406,7 +478,8 @@ class Ctfd2Pages {
     await this.waitallnav.wait();
 
     for (const handout of this.allHandouts) {
-      const filepath = this.urlToPath(handout);
+      let filepath = handout.replace(/^https:\/\/uiuctf-2024-rctf-challenge-uploads\.storage\.googleapis\.com\//, 'https://2024.uiuc.tf/');
+      filepath = this.urlToPath(filepath);
       if (!this.completedDownloads.has(filepath)) {
         await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
         await this.downloadFile(handout, filepath);
