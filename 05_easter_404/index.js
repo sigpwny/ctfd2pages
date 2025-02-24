@@ -32,17 +32,29 @@ const main = async function() {
 
     outputhtml = util.replaceOnce(outputhtml, src, dst);
   };
+  const textnodefinder = (src) =>
+    textNodes.filter((node) => node.textContent.trim() === src);
 
-  findReplace(
-      'Sorry about that',
-      // eslint-disable-next-line max-len
-      'This site has been archived and is now served statically by GitHub Pages',
-      (src) => textNodes.filter((node) => node.textContent.trim() === src),
-  );
+  if (textnodefinder('Sorry about that').length) {
+    findReplace(
+        'Sorry about that',
+        // eslint-disable-next-line max-len
+        'This site has been archived and is now served statically by GitHub Pages',
+        textnodefinder,
+    );
+  } else {
+    findReplace(
+        '404 Not Found',
+        // eslint-disable-next-line max-len
+        'This site has been archived and is now served statically by GitHub Pages',
+        (src) => textNodes.filter((node) => node.textContent.trim() === src &&
+          node.parentElement.nodeName === 'H2'),
+    );
+  }
   findReplace(
       'Powered by CTFd',
       'Powered by <s>CTFd</s> GitHub Pages',
-      (src) => textNodes.filter((node) => node.textContent.trim() === src),
+      textnodefinder,
   );
   findReplace(
       'https://ctfd.io',
