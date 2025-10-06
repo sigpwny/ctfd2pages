@@ -6,7 +6,7 @@
     "jsdom": "^25.0.1",
     "markdown-it": "^14.0.0",
     "memfs": "^4.2.0",
-    "puppeteer": "^23.6.0",
+    "puppeteer": "^24.23.0",
     "unionfs": "^4.4.0",
     "webpack": "^5.74.0"
   },
